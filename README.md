@@ -88,42 +88,11 @@ Will publish the plugin to [Plugin Portal](https://plugins.gradle.org/).
 
 ## Properties
 
-It can be tweaked in `gradle.properties` with some properties, the plugin reads them like this:
+It can be tweaked with `conventionalRelease { /* config here*/ }`:
 
 ```groovy
 // ---- default config ----
-// repoType: JAR # JAR, GRADLE, COMMAND
-repoType: project.getProperties().getOrDefault("repoType", "JAR"),
-// relocate: org:org,com:com # Empty by default will.
-relocate: project.getProperties().getOrDefault("relocate", ""),
-ignoreCommitsIfMessageMatches: project.getProperties().getOrDefault("ignoreCommitsIfMessageMatches", "^\[maven-release-plugin\].*|^\[Gradle Release Plugin\].*|^Merge.*|.*\[GRADLE SCRIPT\].*"),
-// If not prepending, it will rewrite the entire changelog
-prependChangelogToFile: project.getProperties().getOrDefault("prependChangelogToFile", "true") == "true",
-updateChangelog: project.getProperties().getOrDefault("updateChangelog", "true") == "true",
-setVersionConventional: project.getProperties().getOrDefault("updateChangelog", "true") == "true",
-website: project.getProperties().getOrDefault("website", "https://github.com/tomasbjerre/" + project.name),
-vcsUrl: project.getProperties().getOrDefault("vcsUrl", "https://github.com/tomasbjerre/" + project.name),
-licenseName: project.getProperties().getOrDefault("licenseName", "The Apache Software License, Version 2.0"),
-licenseUrl: project.getProperties().getOrDefault("licenseUrl", "http://www.apache.org/licenses/LICENSE-2.0.txt"),
-developerId: project.getProperties().getOrDefault("developerId", "tomasbjerre"),
-developerName: project.getProperties().getOrDefault("developerName", "Tomas Bjerre"),
-developerEmail: project.getProperties().getOrDefault("developerEmail", "tomas.bjerre85@gmail.com"),
-mavenRepositoryName: project.getProperties().getOrDefault("mavenRepositoryName", "nexus"),
-mavenRepositoryUrl: project.getProperties().getOrDefault("mavenRepositoryUrl", "https://oss.sonatype.org/service/local/"),
-nexusUsernameEnvOrProp: project.getProperties().getOrDefault("nexusUsernameEnvOrProp", "nexusUsername"),
-nexusPasswordEnvOrProp: project.getProperties().getOrDefault("nexusPasswordEnvOrProp", "nexusPassword"),
-signingKeyEnvOrProp: project.getProperties().getOrDefault("signingKeyEnvOrProp", "signing.keyId"),
-signingPasswordEnvOrProp: project.getProperties().getOrDefault("signingPasswordEnvOrProp", "signing.password"),
-// tags: a,b,c # Empty by default
-tags: project.getProperties().getOrDefault("tags", ""),
-implementationClass: project.getProperties().getOrDefault("implementationClass", ""),
-stripGradlePluginSuffix: project.getProperties().getOrDefault("stripGradlePluginSuffix", "true") == "true",
-// If it should be published to Plugin Portal or Central
-publishGradlePluginToGradlePortal: project.getProperties().getOrDefault("publishGradlePluginToGradlePortal", "true") == "true",
-// If using groovy-gradle-plugin it will add a plugin that needs to be adjusted
-adjustExistingGradlePluginPlugins: project.getProperties().getOrDefault("adjustExistingGradlePluginPlugins", "false") == "true",
-// If not using groovy-gradle-plugin a plugin needs to be added
-addGradlePluginPlugins: project.getProperties().getOrDefault("addGradlePluginPlugins", "true") == "true",
+
 // ---- default config ----
 ```
 

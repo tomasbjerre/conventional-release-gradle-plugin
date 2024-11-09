@@ -1,80 +1,95 @@
-def getGivenConfigConventionalelease() {
-	def givenConfig = [
-		// ---- default config ----
-		// repoType: JAR # JAR, GRADLE, COMMAND
-		repoType: project.getProperties().getOrDefault("repoType", "JAR"),
-		// relocate: org:org,com:com # Empty by default will.
-		relocate: project.getProperties().getOrDefault("relocate", ""),
-		ignoreCommitsIfMessageMatches: project.getProperties().getOrDefault("ignoreCommitsIfMessageMatches", "^\\[maven-release-plugin\\].*|^\\[Gradle Release Plugin\\].*|^Merge.*|.*\\[GRADLE SCRIPT\\].*"),
-		// If not prepending, it will rewrite the entire changelog
-		prependChangelogToFile: project.getProperties().getOrDefault("prependChangelogToFile", "true") == "true",
-		updateChangelog: project.getProperties().getOrDefault("updateChangelog", "true") == "true",
-		setVersionConventional: project.getProperties().getOrDefault("updateChangelog", "true") == "true",
-		website: project.getProperties().getOrDefault("website", "https://github.com/tomasbjerre/" + project.name),
-		vcsUrl: project.getProperties().getOrDefault("vcsUrl", "https://github.com/tomasbjerre/" + project.name),
-		licenseName: project.getProperties().getOrDefault("licenseName", "The Apache Software License, Version 2.0"),
-		licenseUrl: project.getProperties().getOrDefault("licenseUrl", "http://www.apache.org/licenses/LICENSE-2.0.txt"),
-		developerId: project.getProperties().getOrDefault("developerId", "tomasbjerre"),
-		developerName: project.getProperties().getOrDefault("developerName", "Tomas Bjerre"),
-		developerEmail: project.getProperties().getOrDefault("developerEmail", "tomas.bjerre85@gmail.com"),
-		mavenRepositoryName: project.getProperties().getOrDefault("mavenRepositoryName", "nexus"),
-		mavenRepositoryUrl: project.getProperties().getOrDefault("mavenRepositoryUrl", "https://oss.sonatype.org/service/local/"),
-		nexusUsernameEnvOrProp: project.getProperties().getOrDefault("nexusUsernameEnvOrProp", "nexusUsername"),
-		nexusPasswordEnvOrProp: project.getProperties().getOrDefault("nexusPasswordEnvOrProp", "nexusPassword"),
-		signingKeyEnvOrProp: project.getProperties().getOrDefault("signingKeyEnvOrProp", "signing.keyId"),
-		signingPasswordEnvOrProp: project.getProperties().getOrDefault("signingPasswordEnvOrProp", "signing.password"),
-		// tags: a,b,c # Empty by default
-		tags: project.getProperties().getOrDefault("tags", ""),
-		implementationClass: project.getProperties().getOrDefault("implementationClass", ""),
-		stripGradlePluginSuffix: project.getProperties().getOrDefault("stripGradlePluginSuffix", "true") == "true",
-		// If it should be published to Plugin Portal or Central
-		publishGradlePluginToGradlePortal: project.getProperties().getOrDefault("publishGradlePluginToGradlePortal", "true") == "true",
-		// If using groovy-gradle-plugin it will add a plugin that needs to be adjusted
-		adjustExistingGradlePluginPlugins: project.getProperties().getOrDefault("adjustExistingGradlePluginPlugins", "false") == "true",
-		// If not using groovy-gradle-plugin a plugin needs to be added
-		addGradlePluginPlugins: project.getProperties().getOrDefault("addGradlePluginPlugins", "true") == "true",
-		// ---- default config ----
-	]
-	return givenConfig
+// ---- default config ----
+enum REPOTYPE {
+	JAR, GRADLE, COMMAND
 }
 
-def getEffectiveConfigConventionalelease() {
-	def givenConfig = getGivenConfigConventionalelease();
-	return givenConfig + [
-		useShadowJar: !givenConfig.relocate.isEmpty(),
-		tags: givenConfig.tags.tokenize(','),
-		relocate: givenConfig.relocate.tokenize(',')]
+interface ConventionalReleasePluginExtension {
+	Property<REPOTYPE> getRepoType()
+	// Format: org:org,com:com
+	Property<String> getRelocate()
+	Property<String> getIgnoreCommitsIfMessageMatches()
+	// If not prepending, it will rewrite the entire changelog
+	Property<String> getPrependChangelogToFile()
+	Property<String> getUpdateChangelog()
+	Property<String> getSetVersionConventional()
+	Property<String> getWebsite()
+	Property<String> getVcsUrl()
+	Property<String> getLicenseName()
+	Property<String> getLicenseUrl()
+	Property<String> getDeveloperId() 
+	Property<String> getDeveloperName() 
+	Property<String> getDeveloperEmail() 
+	Property<String> getMavenRepositoryName() 
+	Property<String> getMavenRepositoryUrl() 
+	Property<String> getNexusUsernameEnvOrProp() 
+	Property<String> getNexusPasswordEnvOrProp() 
+	Property<String> getSigningKeyEnvOrProp() 
+	Property<String> getSigningPasswordEnvOrProp()
+	Property<String> getTags() 
+	Property<String> getImplementationClass()
+	Property<String> getStripGradlePluginSuffix()
+	// If it should be published to Plugin Portal or Central
+	Property<String> getPublishGradlePluginToGradlePortal()
+	// If using groovy-gradle-plugin it will add a plugin that needs to be adjusted
+	Property<String> getAdjustExistingGradlePluginPlugins()
+	// If not using groovy-gradle-plugin a plugin needs to be added
+	Property<String> getAddGradlePluginPlugins()
 }
 
-logger.info("Conventional Release: Given config: ${getGivenConfigConventionalelease()}")
-logger.info("Conventional Release: Effective config: ${getEffectiveConfigConventionalelease()}")
+def extension = project.extensions.create("conventionalRelease", ConventionalReleasePluginExtension)
+extension.repoType.convention(REPOTYPE.JAR)
+extension.relocate.convention("")
+extension.ignoreCommitsIfMessageMatches.convention("^\\[maven-release-plugin\\].*|^\\[Gradle Release Plugin\\].*|^Merge.*|.*\\[GRADLE SCRIPT\\].*")
+extension.prependChangelogToFile.convention(true)
+extension.updateChangelog.convention(true)
+extension.setVersionConventional.convention(true)
+extension.website.convention("https://github.com/tomasbjerre/" + project.name)
+extension.vcsUrl.convention("https://github.com/tomasbjerre/" + project.name)
+extension.licenseName.convention("The Apache Software License, Version 2.0")
+extension.licenseUrl.convention("http://www.apache.org/licenses/LICENSE-2.0.txt")
+extension.developerId.convention("tomasbjerre")
+extension.developerName.convention("Tomas Bjerre")
+extension.developerEmail.convention("tomas.bjerre85@gmail.com")
+extension.mavenRepositoryName.convention("nexus")
+extension.mavenRepositoryUrl.convention("https://oss.sonatype.org/service/local/")
+extension.nexusUsernameEnvOrProp.convention("nexusUsername")
+extension.nexusPasswordEnvOrProp.convention("nexusPassword")
+extension.signingKeyEnvOrProp.convention("signing.keyId")
+extension.signingPasswordEnvOrProp.convention( "signing.password")
+extension.implementationClass.convention("")
+extension.stripGradlePluginSuffix.convention(true)
+extension.publishGradlePluginToGradlePortal.convention(true)
+extension.adjustExistingGradlePluginPlugins.convention(false)
+extension.addGradlePluginPlugins.convention(true)
+// ---- default config ----
 
-if (getEffectiveConfigConventionalelease().setVersionConventional) {
+
+if (extension.setVersionConventional) {
 	logger.lifecycle("Setting version from conventional commits")
-	project.ext.setVersionConventional = getEffectiveConfigConventionalelease().setVersionConventional
+	project.ext.setVersionConventional = extension.setVersionConventional
 	project.ext.suffixSnapshot=false
 	project.ext.suffixSnapshotIfNotTagged=false
 }
-if (getEffectiveConfigConventionalelease().useShadowJar) {
+if (extension.useShadowJar) {
 	project.plugins.apply "com.gradleup.shadow"
 }
 project.plugins.apply 'java-library'
 project.plugins.apply 'maven-publish'
 project.plugins.apply 'signing'
 project.plugins.apply "io.github.gradle-nexus.publish-plugin"
-if (getEffectiveConfigConventionalelease().repoType == "GRADLE"
-		&& getEffectiveConfigConventionalelease().publishGradlePluginToGradlePortal) {
+if (extension.repoType.get() == "GRADLE"
+		&& extension.publishGradlePluginToGradlePortal) {
 	project.plugins.apply "com.gradle.plugin-publish"
 }
-if (getEffectiveConfigConventionalelease().updateChangelog
-		|| getEffectiveConfigConventionalelease().setVersionConventional) {
+if (extension.updateChangelog
+		|| extension.setVersionConventional) {
 	project.plugins.apply "se.bjurr.gitchangelog.git-changelog-gradle-plugin"
 	gitChangelogSemanticVersion {
 		suffixSnapshotIfNotTagged = false
 	}
 	gitChangelog {
-		ignoreCommitsIfMessageMatches = getEffectiveConfigConventionalelease().ignoreCommitsIfMessageMatches
-		prependToFile = getEffectiveConfigConventionalelease().prependChangelogToFile
+		ignoreCommitsIfMessageMatches = extension.ignoreCommitsIfMessageMatches
+		prependToFile = extension.prependChangelogToFile
 	}
 }
 
@@ -98,9 +113,9 @@ task setupNpmJavaRunnerFiles() {
 		copyIfFound("npm-java-runner-package.json", "package.json")
 		ant.replace(file: new File("package.json"), token: "PKG_NAME", value: project.name)
 		ant.replace(file: new File("package.json"), token: "PKG_VERSION", value: version)
-		ant.replace(file: new File("package.json"), token: "PKG_WEBSITE", value: getEffectiveConfigConventionalelease().website)
-		ant.replace(file: new File("package.json"), token: "PKG_GIT", value: getEffectiveConfigConventionalelease().vcsUrl)
-		ant.replace(file: new File("package.json"), token: "PKG_AUTHOR", value: getEffectiveConfigConventionalelease().developerName)
+		ant.replace(file: new File("package.json"), token: "PKG_WEBSITE", value: extension.website)
+		ant.replace(file: new File("package.json"), token: "PKG_GIT", value: extension.vcsUrl)
+		ant.replace(file: new File("package.json"), token: "PKG_AUTHOR", value: extension.developerName)
 		ant.replace(file: new File("package.json"), token: "PKG_DESCRIPTION", value: project.description.replaceAll("[\"']",""))
 	}
 }
@@ -108,8 +123,8 @@ task setupNpmJavaRunnerFiles() {
 /**
  * Relocating
  */
-if (getEffectiveConfigConventionalelease().useShadowJar) {
-	getEffectiveConfigConventionalelease().relocate.each { it ->
+if (extension.useShadowJar) {
+	extension.relocate.each { it ->
 		if (it.isEmpty()) {
 			return
 		}
@@ -141,11 +156,11 @@ if (getEffectiveConfigConventionalelease().useShadowJar) {
 /**
  * GRADLE
  */
-if (getEffectiveConfigConventionalelease().repoType == "GRADLE"
-		&& getEffectiveConfigConventionalelease().publishGradlePluginToGradlePortal) {
+if (extension.repoType == "GRADLE"
+		&& extension.publishGradlePluginToGradlePortal) {
 	def pluginId = (project.group + '.' + project.name)
 			.replaceAll("[\"']","")
-	if (getEffectiveConfigConventionalelease().stripGradlePluginSuffix) {
+	if (extension.stripGradlePluginSuffix) {
 		pluginId = pluginId.replaceAll(/-gradle-plugin$/,"")
 	}
 	def displayNameValue = (name.substring(0, 1).toUpperCase() + name.substring(1))
@@ -153,27 +168,27 @@ if (getEffectiveConfigConventionalelease().repoType == "GRADLE"
 			.replaceAll("[\"']","")
 	logger.lifecycle("pluginId ${pluginId} displayName ${displayNameValue}")
 	gradlePlugin {
-		website = getEffectiveConfigConventionalelease().website
-		vcsUrl = getEffectiveConfigConventionalelease().vcsUrl
+		website = extension.website
+		vcsUrl = extension.vcsUrl
 		description = project.description.replaceAll("[\"']","")
 
 		plugins {
-			if (getEffectiveConfigConventionalelease().addGradlePluginPlugins) {
+			if (extension.addGradlePluginPlugins) {
 				thePlugin {
-					tags.set(getEffectiveConfigConventionalelease().tags)
+					tags.set(extension.tags)
 					description = project.description.replaceAll("[\"']","")
 					id = pluginId
 					displayName = displayNameValue
-					implementationClass = getEffectiveConfigConventionalelease().implementationClass
+					implementationClass = extension.implementationClass
 				}
 			}
-			if (getEffectiveConfigConventionalelease().adjustExistingGradlePluginPlugins) {
+			if (extension.adjustExistingGradlePluginPlugins) {
 				matching { it.name.startsWith(project.group) }.configureEach {
-					tags.set(getEffectiveConfigConventionalelease().tags)
+					tags.set(extension.tags)
 					description = project.description.replaceAll("[\"']","")
 					id = pluginId
 					displayName = displayNameValue
-					implementationClass = getEffectiveConfigConventionalelease().implementationClass
+					implementationClass = extension.implementationClass
 				}
 			}
 		}
@@ -183,7 +198,7 @@ if (getEffectiveConfigConventionalelease().repoType == "GRADLE"
 /**
  * Maven publishing
  */
-if (getEffectiveConfigConventionalelease().repoType != "GRADLE") {
+if (extension.repoType != "GRADLE") {
 	java {
 		withSourcesJar()
 		withJavadocJar()
@@ -192,7 +207,7 @@ if (getEffectiveConfigConventionalelease().repoType != "GRADLE") {
 	publishing {
 		publications {
 			mavenJava(MavenPublication) { publication ->
-				if (getEffectiveConfigConventionalelease().useShadowJar) {
+				if (extension.useShadowJar) {
 					logger.lifecycle("shadow jar in maven publication")
 					project.shadow.component(publication)
 					artifact javadocJar
@@ -224,28 +239,28 @@ afterEvaluate {
 			task.pom.name = project.name
 			task.pom.withXml {
 				def root = asNode()
-				root.appendNode('url', getEffectiveConfigConventionalelease().website)
+				root.appendNode('url', extension.website)
 				root.appendNode('inceptionYear', new Date().getYear() + 1900)
 				root.children().last() + {
 					scm {
-						url getEffectiveConfigConventionalelease().website
-						connection getEffectiveConfigConventionalelease().vcsUrl
-						developerConnection getEffectiveConfigConventionalelease().vcsUrl
+						url extension.website
+						connection extension.vcsUrl
+						developerConnection extension.vcsUrl
 					}
 
 					licenses {
 						license {
-							name getEffectiveConfigConventionalelease().licenseName
-							url getEffectiveConfigConventionalelease().licenseUrl
+							name extension.licenseName
+							url extension.licenseUrl
 							distribution 'repo'
 						}
 					}
 
 					developers {
 						developer {
-							id getEffectiveConfigConventionalelease().developerId
-							name getEffectiveConfigConventionalelease().developerName
-							email getEffectiveConfigConventionalelease().developerEmail
+							id extension.developerId
+							name extension.developerName
+							email extension.developerEmail
 						}
 					}
 				}
@@ -262,19 +277,19 @@ java {
 nexusPublishing {
 	repositories {
 		sonatype {
-			nexusUrl = uri(getEffectiveConfigConventionalelease().mavenRepositoryUrl)
-			username = findEnvOrPropValue(getEffectiveConfigConventionalelease().nexusUsernameEnvOrProp)
-			password = findEnvOrPropValue(getEffectiveConfigConventionalelease().nexusPasswordEnvOrProp)
+			nexusUrl = uri(extension.mavenRepositoryUrl)
+			username = findEnvOrPropValue(extension.nexusUsernameEnvOrProp)
+			password = findEnvOrPropValue(extension.nexusPasswordEnvOrProp)
 		}
 	}
 }
 
 signing {
-	def signingKey = findEnvOrPropValue(getEffectiveConfigConventionalelease().signingKeyEnvOrProp)
-	def signingPassword = findEnvOrPropValue(getEffectiveConfigConventionalelease().signingPasswordEnvOrProp)
+	def signingKey = findEnvOrPropValue(extension.signingKeyEnvOrProp)
+	def signingPassword = findEnvOrPropValue(extension.signingPasswordEnvOrProp)
 	def hasSigningCredentials = signingKey != null && signingPassword != null
 	// I use "signing.keyId" prop when building locally, remote probably different and it probably has in memory
-	def assumeThereIsAnInMemoryPgpKeys = getEffectiveConfigConventionalelease().signingKeyEnvOrProp != "signing.keyId"
+	def assumeThereIsAnInMemoryPgpKeys = extension.signingKeyEnvOrProp != "signing.keyId"
 
 
 	required {
@@ -306,7 +321,7 @@ tasks.withType(AbstractPublishToMaven) { publishTask ->
  */
 task release(type: GradleBuild) {
 	tasks = ['clean']
-	if (getEffectiveConfigConventionalelease().setVersionConventional) {
+	if (extension.setVersionConventional) {
 		tasks += [
 			'gitChangelogSemanticVersion',
 			'commitNewVersionTask',
@@ -315,8 +330,8 @@ task release(type: GradleBuild) {
 
 	tasks += ['publishToMavenLocal',]
 
-	if (getEffectiveConfigConventionalelease().repoType == "GRADLE"
-			&& getEffectiveConfigConventionalelease().publishGradlePluginToGradlePortal) {
+	if (extension.repoType == "GRADLE"
+			&& extension.publishGradlePluginToGradlePortal) {
 		tasks += ["publishPlugins"]
 	} else {
 		tasks += [
@@ -324,14 +339,14 @@ task release(type: GradleBuild) {
 			"closeAndReleaseStagingRepositories",
 		]
 	}
-	if (getEffectiveConfigConventionalelease().updateChangelog) {
+	if (extension.updateChangelog) {
 		tasks += [
 			'gitChangelog',
 			'commitChangelogTask'
 		]
 	}
 
-	if (getEffectiveConfigConventionalelease().repoType == 'COMMAND') {
+	if (extension.repoType == 'COMMAND') {
 		tasks += [
 			"setupNpmJavaRunnerFiles",
 			"publishNpm"
